@@ -42,7 +42,14 @@ for origem, f in files.items():
             s(r['Equipamentos']).upper(), num(r['CHI']), hm(r['Horario Inicio']), hm(r['Horario Fim']),
             s(r['Contratada']), origem, line,
         ])
-print('programacoes', len(rows))
+print('programacoes lidas', len(rows))
+
+# Regras de exclusão (escopo do painel)
+EXCLUIR = {('Start', 'Manutenção de Redes e Linhas Aéreas'), ('Conecta', 'Poda de Árvores')}
+_pr = pd.read_excel(proj_file, dtype=str, usecols=['Projeto', 'Descrição do Projeto'])
+_desc = {s(a).upper(): s(b) for a, b in zip(_pr['Projeto'], _pr['Descrição do Projeto'])}
+rows = [r for r in rows if (r[10], _desc.get(r[0], '')) not in EXCLUIR]
+print('programacoes apos exclusoes', len(rows))
 
 # Base de projetos (cadastro)
 needed = {r[0] for r in rows}

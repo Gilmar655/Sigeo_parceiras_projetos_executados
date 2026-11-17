@@ -17,6 +17,10 @@ const SC = { 'Executado': '#16a34a', 'Executado Parcial': '#f59e0b', 'Cancelado'
 const scol = s => SC[s] || '#64748b';
 const PALETTE = ['#1f5eff', '#d8127d', '#0891b2', '#f59e0b', '#16a34a', '#8b5cf6', '#ef4444', '#0ea5e9', '#84cc16', '#64748b', '#f97316', '#14b8a6'];
 const OPEN = new Set(['Liberado para Execução', 'Pendente de Aprovação', 'Liberado para Documentação', 'Rascunho']);
+// Regras de exclusão: parceira + descrição do projeto (aplicadas também nas importações)
+const EXCLUDE = [['Start', 'Manutenção de Redes e Linhas Aéreas'], ['Conecta', 'Poda de Árvores']];
+const excluded = (origin, desc) => EXCLUDE.some(([o, d]) => norm(o) === norm(origin) && norm(d) === norm(desc));
+function applyExclusions() { const P = BASE.projects || {}; const before = BASE.prog.length; BASE.prog = BASE.prog.filter(r => !excluded(r[10], (P[r[0]] || [])[2] || '')); return before - BASE.prog.length; }
 const TITLES = { overview: 'Painel geral', map: 'Mapa de projetos', projects: 'Projetos', records: 'Programações', partners: 'Parceiras', data: 'Importar / Exportar' };
 
 let BASE, records = [], filtered = [], projLoc = new Map(), view = 'overview', charts = {}, map = null, histMap = null, isLocal = false;
@@ -38,6 +42,7 @@ const normRegion = r => { r = String(r || '').toUpperCase().trim(); return r; };
 
 /* ---------- Normalização ---------- */
 function build() {
+  applyExclusions();
   const P = BASE.projects || {}, C = BASE.coords || {};
   const counts = new Map();
   records = BASE.prog.map((r, i) => {
@@ -276,6 +281,9 @@ function vPartners(rows) {
 /* ---------- Mapa ---------- */
 function tileLayers() {
   return {
+    'Google Maps (ruas)': L.tileLayer('https://{s}.google.com/vt/lyrs=m&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 21, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: 'Mapa &copy; Google' }),
+    'Google Híbrido (satélite + ruas)': L.tileLayer('https://{s}.google.com/vt/lyrs=y&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 21, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: 'Imagens &copy; Google' }),
+    'Google Satélite': L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', { maxZoom: 21, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: 'Imagens &copy; Google' }),
     'Mapa claro': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 20, attribution: '&copy; OpenStreetMap &copy; CARTO' }),
     'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }),
     'Satélite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' })
@@ -295,10 +303,10 @@ function vMap(rows, focus) {
   if (!window.L) { $('map').innerHTML = '<div class="empty">Biblioteca de mapa indisponível.</div>'; return; }
   if (map) { map.remove(); map = null; }
   const tl = tileLayers();
-  map = L.map('map', { preferCanvas: true, layers: [tl['Mapa claro']] }).setView([-23.55, -46.55], 11);
+  map = L.map('map', { preferCanvas: true, layers: [tl['Google Maps (ruas)']] }).setView([-23.55, -46.55], 11);
   L.control.layers(tl, null, { position: 'topright' }).addTo(map);
   L.control.scale({ imperial: false }).addTo(map);
-  const cluster = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 45, spiderfyOnMaxZoom: true, showCoverageOnHover: false, disableClusteringAtZoom: 17 });
+  const cluster = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 45, spiderfyOnMaxZoom: true, showCoverageOnHover: false, disableClusteringAtZoom: 16 });
   const byCode = {};
   for (const p of withLoc) {
     const color = mapColor === 'status' ? scol(p.lastStatus) : oc[p.origins.values().next().value];
@@ -319,7 +327,7 @@ function popupHtml(p) {
    ${row('Rua', esc(p.rua || '—'))}${row('Região', esc(p.region))}${row('Parceira', esc(p.origin))}${row('Programações', num(p.n))}
    ${row('Exec / Parc / Canc', `${p.exec} / ${p.part} / ${p.canc}`)}${row('Última', br(p.last) + ` · <span class="pill ${cls(p.lastStatus)}">${esc(p.lastStatus)}</span>`)}${row('Equipamento', esc(p.eq))}
    <button class="btn primary sm" data-hist="${esc(p.code)}">Ver histórico de programações</button>
-   <div style="display:flex;gap:6px;margin-top:6px"><a class="btn sm" style="flex:1;text-align:center;text-decoration:none" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}">Google Maps</a><a class="btn sm" style="flex:1;text-align:center;text-decoration:none" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes">Waze</a></div></div>`;
+   <div style="display:flex;gap:6px;margin-top:6px"><a class="btn sm" style="flex:1;text-align:center;text-decoration:none" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}">Google Maps</a><a class="btn sm" style="flex:1;text-align:center;text-decoration:none" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes">Waze</a><a class="btn sm" style="flex:1;text-align:center;text-decoration:none" target="_blank" rel="noopener" href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${p.lat},${p.lng}">Street View</a></div></div>`;
 }
 
 /* ---------- Histórico do projeto ---------- */
@@ -335,7 +343,7 @@ function openHistory(code) {
      <div class="t-meta">Tipo <b>${esc(r.type)}</b> · PowerON <b>${esc(r.power || '—')}</b> · CHI <b>${num(r.chi)}</b><br>Equip.: ${esc(r.equip)}<br>${esc(r.origin)} · ${esc(r.contr)}</div></li>`).join('');
   const table = `<div class="table-wrap" style="max-height:320px"><table><thead><tr><th>#</th><th>Data</th><th>Status</th><th>Tipo</th><th>PowerON</th><th>Equipamentos</th><th>Início</th><th>Fim</th><th class="num">CHI</th><th>Contratada</th><th>Parceira</th></tr></thead><tbody>${rows.map((r, i) => `<tr><td>${rows.length - i}</td><td>${br(r.date)}</td><td><span class="pill ${cls(r.status)}">${esc(r.status)}</span></td><td>${esc(r.type)}</td><td>${esc(r.power || '—')}</td><td>${esc(r.equip)}</td><td>${esc(r.hi)}</td><td>${esc(r.hf)}</td><td class="num">${num(r.chi)}</td><td>${esc(r.contr)}</td><td>${esc(r.origin)}</td></tr>`).join('')}</tbody></table></div>`;
   $('modalBody').innerHTML = `<div class="h-head"><div><span class="tag">HISTÓRICO DO PROJETO</span><h2 class="code" style="font-size:22px;margin-top:8px">${esc(code)}</h2><div class="sub">${[info[2] || 'Sem descrição no cadastro', info[3], info[4]].filter(Boolean).map(esc).join(' · ')}</div></div>
-   <div class="h-actions"><button class="btn sm primary" id="hExport">⬇ Exportar histórico</button>${loc ? `<button class="btn sm" id="hMap">⌖ Ver no mapa geral</button><a class="btn sm" target="_blank" rel="noopener" style="text-decoration:none" href="https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}">Google Maps</a><a class="btn sm" target="_blank" rel="noopener" style="text-decoration:none" href="https://waze.com/ul?ll=${loc.lat},${loc.lng}&navigate=yes">Waze</a>` : ''}<button class="btn sm" id="hLink">🔗 Copiar link</button></div></div>
+   <div class="h-actions"><button class="btn sm primary" id="hExport">⬇ Exportar histórico</button>${loc ? `<button class="btn sm" id="hMap">⌖ Ver no mapa geral</button><a class="btn sm" target="_blank" rel="noopener" style="text-decoration:none" href="https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}">Google Maps</a><a class="btn sm" target="_blank" rel="noopener" style="text-decoration:none" href="https://waze.com/ul?ll=${loc.lat},${loc.lng}&navigate=yes">Waze</a><a class="btn sm" target="_blank" rel="noopener" style="text-decoration:none" href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}">Street View</a>` : ''}<button class="btn sm" id="hLink">🔗 Copiar link</button></div></div>
    <div class="mini-kpis" style="margin-top:14px"><div><b>${num(s.total)}</b>programações</div><div><b style="color:${SC.Executado}">${num(s.exec)}</b>executadas</div><div><b style="color:${SC['Executado Parcial']}">${num(s.part)}</b>parciais</div><div><b style="color:${SC.Cancelado}">${num(s.canc)}</b>canceladas</div><div><b style="color:${SC['Liberado para Execução']}">${num(s.open)}</b>em aberto</div><div><b>${num(s.chi)}</b>CHI total</div><div><b>${br(d[0])}</b>primeira</div><div><b>${br(d.at(-1))}</b>última</div><div><b>${num(days)}</b>dias entre 1ª e última</div><div><b>${num(eqs.length)}</b>equipamentos</div></div>
    <div class="info-grid">${infoBoxes || '<div class="info"><small>Cadastro</small><b>Projeto sem registro na base de projetos</b></div>'}${loc ? `<div class="info"><small>Coordenada (${esc(loc.eq)})</small><b>${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}</b></div><div class="info"><small>Circuito</small><b>${esc(loc.circ || '—')}</b></div>` : ''}</div>
    <div class="h-body"><div><h3 style="margin:0 0 8px;font-size:15px">Linha do tempo das programações</h3><ul class="timeline">${tl}</ul></div>
@@ -353,7 +361,7 @@ function openHistory(code) {
   if (loc && window.L) {
     if (histMap) { histMap.remove(); histMap = null; }
     const tl2 = tileLayers();
-    histMap = L.map('histMap', { layers: [tl2['Mapa claro']] });
+    histMap = L.map('histMap', { layers: [tl2['Google Maps (ruas)']] });
     L.control.layers(tl2).addTo(histMap);
     const C = BASE.coords || {}, pts = [];
     for (const e of eqs) {
@@ -546,7 +554,7 @@ function vData() {
      <button class="btn magenta" data-exp="basejs">⬇ base.js para publicar no GitHub</button>
      <button class="btn danger" id="restore" ${isLocal ? '' : 'disabled'}>↺ Restaurar base publicada</button></div>
     <div class="info-grid" style="grid-template-columns:1fr 1fr"><div class="info"><small>Programações</small><b>${num(s.total)}</b></div><div class="info"><small>Projetos</small><b>${num(s.nProj)}</b></div><div class="info"><small>Projetos no mapa</small><b>${num(s.geo.size)} (${pct(s.geoRate)})</b></div><div class="info"><small>Origem dos dados</small><b>${isLocal ? 'Importação local' : 'Base publicada'}</b></div></div>
-    <p class="note">Fontes da base publicada: ${(BASE.meta.arquivos || []).map(esc).join(' · ')}</p></section></div>`;
+    <p class="note"><b>Fora do escopo do painel</b> (removidos também nas importações): Start — Manutenção de Redes e Linhas Aéreas; Conecta — Poda de Árvores.</p><p class="note">Fontes da base publicada: ${(BASE.meta.arquivos || []).map(esc).join(' · ')}</p></section></div>`;
   $('pick').onclick = () => $('fileInput').click();
   const drop = $('drop');
   ['dragenter', 'dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
