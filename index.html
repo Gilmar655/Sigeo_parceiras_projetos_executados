@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SIGEO Parceiras | Programação e localização de projetos</title>
+<meta name="description" content="Painel de programações SIGEO das parceiras Start, Conecta e Engelmig — Enel Brasil Grids">
+<meta name="theme-color" content="#0b1d3a">
+<link rel="icon" href="assets/enel-brasil.png">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="vendor/leaflet/MarkerCluster.css">
+<link rel="stylesheet" href="vendor/leaflet/MarkerCluster.Default.css">
+<link rel="stylesheet" href="styles.css">
+<script src="vendor/chart.umd.min.js" defer></script>
+<script src="vendor/leaflet/leaflet.js" defer></script>
+<script src="vendor/leaflet/leaflet.markercluster.js" defer></script>
+<script src="vendor/xlsx.full.min.js" defer></script>
+<script src="data/base.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><img src="assets/enel-brasil.png" alt="Enel Brasil"></div>
+  <div class="product"><b>SIGEO</b><span>Programação de parceiras</span></div>
+  <nav id="nav">
+    <button data-view="overview" class="active"><i>◧</i><span>Painel geral</span></button>
+    <button data-view="map"><i>⌖</i><span>Mapa de projetos</span></button>
+    <button data-view="projects"><i>▤</i><span>Projetos</span></button>
+    <button data-view="records"><i>☰</i><span>Programações</span></button>
+    <button data-view="partners"><i>⇄</i><span>Parceiras</span></button>
+    <button data-view="data"><i>⇅</i><span>Importar / Exportar</span></button>
+  </nav>
+  <div class="side-foot">
+    <div id="baseStamp" class="stamp"></div>
+    <small>Gestão de Programação<br>Enel Brasil – Grids</small>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">☰</button>
+    <div class="titles">
+      <span class="crumb">Operações · Leste / Norte / ABC</span>
+      <h1 id="pageTitle">Painel geral</h1>
+    </div>
+    <div class="top-actions">
+      <button class="btn ghost" id="btnImportTop" title="Importar planilhas Excel">⬆ Importar</button>
+      <button class="btn primary" id="btnExportTop" title="Exportar o recorte filtrado para Excel">⬇ Exportar Excel</button>
+    </div>
+  </header>
+
+  <section class="filters card" id="filters">
+    <div class="filters-head">
+      <strong>Filtros</strong>
+      <span class="count" id="filterCount"></span>
+      <div class="chips" id="activeChips"></div>
+      <button class="link" id="clearFilters">Limpar filtros</button>
+    </div>
+    <div class="filter-grid">
+      <label class="search"><span>Pesquisa</span><input id="fSearch" type="search" placeholder="Projeto, PowerON, equipamento, rua, nota…"></label>
+      <label><span>De</span><input id="fFrom" type="date"></label>
+      <label><span>Até</span><input id="fTo" type="date"></label>
+      <label><span>Parceira</span><select id="fOrigin"></select></label>
+      <label><span>Status programação</span><select id="fStatus"></select></label>
+      <label><span>Tipo intervenção</span><select id="fType"></select></label>
+      <label><span>Região</span><select id="fRegion"></select></label>
+      <label><span>Contratada</span><select id="fContractor"></select></label>
+      <label><span>Descrição</span><select id="fDesc"></select></label>
+      <label><span>Status do projeto</span><select id="fPStatus"></select></label>
+      <label><span>Localização</span><select id="fGeo"><option value="">Todas</option><option value="1">Com coordenada</option><option value="0">Sem coordenada</option></select></label>
+    </div>
+  </section>
+
+  <main id="content"></main>
+
+  <footer class="footer">
+    <span>SIGEO · Monitoramento de programações das parceiras</span>
+    <span id="footInfo"></span>
+  </footer>
+</div>
+
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" aria-label="Fechar">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+<input type="file" id="fileInput" accept=".xlsx,.xls,.csv" multiple hidden>
+<div id="toast" role="status"></div>
+<div id="loading" class="loading"><div class="spinner"></div><span>Carregando base…</span></div>
+</body>
+</html>
