@@ -6,7 +6,7 @@
 <title>SIGEO Parceiras | Programação e localização de projetos</title>
 <meta name="description" content="Painel de programações SIGEO das parceiras Start, Conecta e Engelmig — Enel Brasil Grids">
 <meta name="theme-color" content="#0b1d3a">
-<link rel="icon" href="assets/enel-brasil.png">
+<link rel="icon" href="assets/enel-brasil-logo.png">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="vendor/leaflet/MarkerCluster.css">
 <link rel="stylesheet" href="vendor/leaflet/MarkerCluster.Default.css">
@@ -20,7 +20,7 @@
 </head>
 <body>
 <aside class="sidebar" id="sidebar">
-  <div class="brand"><img src="assets/enel-brasil.png" alt="Enel Brasil"></div>
+  <div class="brand"><img src="assets/enel-brasil-logo.png" alt="Enel Brasil"></div>
   <div class="product"><b>SIGEO</b><span>Programação de parceiras</span></div>
   <nav id="nav">
     <button data-view="overview" class="active"><i>◧</i><span>Painel geral</span></button>
@@ -43,6 +43,8 @@
       <span class="crumb">Operações · Leste / Norte / ABC</span>
       <h1 id="pageTitle">Painel geral</h1>
     </div>
+    <div class="clock" id="clock" aria-live="off" title="Horário de Brasília"><span class="clock-dot"></span><div><b id="clockTime">--:--:--</b><small id="clockDate"></small></div></div>
+    <img class="top-logo" src="assets/enel-brasil-logo.png" alt="Enel Brasil">
     <div class="top-actions">
       <button class="btn ghost" id="btnImportTop" title="Importar planilhas Excel">⬆ Importar</button>
       <button class="btn primary" id="btnExportTop" title="Exportar o recorte filtrado para Excel">⬇ Exportar Excel</button>

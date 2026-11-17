@@ -600,7 +600,15 @@ function bind() {
   document.addEventListener('change', e => { const s = e.target.closest('[data-size]'); if (s) { const st = tableState[s.dataset.size]; st.size = +s.value; st.page = 0; render(); } });
 }
 
+function startClock() {
+  const tz = 'America/Sao_Paulo';
+  const ft = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const fd = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  const tick = () => { const n = new Date(); $('clockTime').textContent = ft.format(n); const d = fd.format(n); $('clockDate').textContent = d.charAt(0).toUpperCase() + d.slice(1); };
+  tick(); setInterval(tick, 1000);
+}
 async function init() {
+  startClock();
   setupChartDefaults();
   BASE = window.SIGEO_DATA;
   try { const local = await IDB.get('base'); if (local && local.prog) { BASE = local; isLocal = true; } } catch (e) { }

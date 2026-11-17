@@ -9,7 +9,7 @@ html,body{margin:0;height:100%}
 body{font-family:"Segoe UI",Inter,Roboto,system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);font-size:14px;display:flex}
 button,input,select{font:inherit;color:inherit}
 .sidebar{position:fixed;inset:0 auto 0 0;width:240px;background:linear-gradient(180deg,var(--navy),#0e2647 70%,#16335f);color:#dbe5f5;display:flex;flex-direction:column;padding:22px 14px;z-index:40;transition:transform .25s}
-.brand{padding:4px 10px 14px}.brand img{height:44px;filter:brightness(0) invert(1)}
+.brand{background:#fff;border-radius:12px;padding:10px 12px;margin:0 6px 16px;display:flex;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.25)}.brand img{height:62px;max-width:100%;object-fit:contain}
 .product{padding:0 10px 18px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:12px}
 .product b{display:block;font-size:20px;letter-spacing:.5px;color:#fff}
 .product span{font-size:12px;color:#9fb1cf}
@@ -150,3 +150,12 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   .topbar,#content,.filters{padding-left:14px;padding-right:14px}.filters{margin:14px}
 }
 @media print{.sidebar,.topbar,.filters,.footer{display:none}.main{margin:0}}
+
+.clock{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 14px;box-shadow:var(--shadow);line-height:1.15}
+.clock b{display:block;font-size:18px;font-variant-numeric:tabular-nums;letter-spacing:.5px;color:var(--navy)}
+.clock small{display:block;font-size:11px;color:var(--muted)}
+.clock-dot{width:9px;height:9px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 0 rgba(22,163,74,.5);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 8px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+.top-logo{height:40px;display:none}
+@media (max-width:900px){.clock{padding:5px 10px}.clock b{font-size:15px}.top-logo{display:block}}
+@media (max-width:600px){.clock small{display:none}.top-logo{display:none}}
